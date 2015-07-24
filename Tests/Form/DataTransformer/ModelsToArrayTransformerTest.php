@@ -14,6 +14,7 @@ namespace Sonata\AdminBundle\Tests\Form\DataTransformer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Sonata\AdminBundle\Form\DataTransformer\ModelsToArrayTransformer;
 use Sonata\AdminBundle\Tests\Fixtures\Entity\Form\FooEntity;
+use Symfony\Component\Form\ChoiceList\LegacyChoiceListAdapter;
 
 /**
  * @author Andrej Hudec <pulzarraider@gmail.com>
@@ -30,17 +31,16 @@ class ModelsToArrayTransformerTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->modelChoiceList = $this->getMockBuilder('Symfony\Component\Form\ChoiceList\ChoiceListInterface')
+        $this->modelChoiceList = $this->getMockBuilder('Sonata\AdminBundle\Form\ChoiceList\ModelChoiceList')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->choiceList = $this->getMockBuilder('Symfony\Component\Form\ChoiceList\LegacyChoiceListAdapter')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->choiceList->expects($this->once())
-            ->method('getAdaptedList')
-            ->will($this->returnValue($this->modelChoiceList));
+        // Symfony < 2.7 BC
+        if (class_exists('Symfony\Component\Form\ChoiceList\LegacyChoiceListAdapter')) {
+            $this->choiceList = new LegacyChoiceListAdapter($this->modelChoiceList);
+        } else {
+            $this->choiceList = $this->modelChoiceList;
+        }
 
         $this->modelManager = $this->getMock('Sonata\AdminBundle\Model\ModelManagerInterface');
 
